@@ -1,4 +1,5 @@
 """Configuration file for the Sphinx documentation builder."""
+
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -30,7 +31,7 @@ from steamship_langchain import __version__ as version  # noqa: E402
 
 release = version
 
-html_title = project + " " + version
+html_title = f"{project} {version}"
 
 
 # -- General configuration ---------------------------------------------------

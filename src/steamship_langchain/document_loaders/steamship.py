@@ -9,10 +9,14 @@ from steamship.data import TagKind, TagValueKey
 
 
 def _get_provenance_tag(file: File) -> Optional[str]:
-    for tag in file.tags:
-        if tag.kind == TagKind.PROVENANCE:
-            return tag.value.get(TagValueKey.STRING_VALUE)
-    return None
+    return next(
+        (
+            tag.value.get(TagValueKey.STRING_VALUE)
+            for tag in file.tags
+            if tag.kind == TagKind.PROVENANCE
+        ),
+        None,
+    )
 
 
 class SteamshipLoader(BaseLoader, BaseModel):
@@ -52,8 +56,7 @@ class SteamshipLoader(BaseLoader, BaseModel):
         docs = []
         for file in source:
             metadata = {"source": file.handle}
-            provenance = _get_provenance_tag(file)
-            if provenance:
+            if provenance := _get_provenance_tag(file):
                 metadata["provenance"] = provenance
 
             if self.collapse_blocks:

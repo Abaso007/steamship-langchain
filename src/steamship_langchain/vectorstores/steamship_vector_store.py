@@ -31,10 +31,14 @@ MODEL_TO_DIMENSIONALITY = {
 
 
 def _get_provenance(file: File) -> str:
-    for tag in file.tags:
-        if tag.kind == TagKind.PROVENANCE:
-            return tag.value.get(TagValueKey.STRING_VALUE) or "unknown"
-    return "unknown"
+    return next(
+        (
+            tag.value.get(TagValueKey.STRING_VALUE) or "unknown"
+            for tag in file.tags
+            if tag.kind == TagKind.PROVENANCE
+        ),
+        "unknown",
+    )
 
 
 def _sanitize_text(text: str) -> str:
@@ -121,8 +125,7 @@ class SteamshipVectorStore(VectorStore):
                 else:
                     source_texts.append(block.text)
 
-            texts = [_sanitize_text(t) for t in source_texts if len(t) > 0]
-            if len(texts) > 0:
+            if texts := [_sanitize_text(t) for t in source_texts if len(t) > 0]:
                 provenance = _get_provenance(file)
                 metadatas = [
                     {"source": f"{file.handle}-chunk-{i}", "provenance": f"{provenance}"}
@@ -145,8 +148,10 @@ class SteamshipVectorStore(VectorStore):
             List of ids from adding the texts into the vectorstore.
         """
         items = [
-            Tag(client=self.client, id=str(uuid.uuid1()), text=text, value=metadata)
-            for i, (text, metadata) in enumerate(zip_longest(texts, metadatas or []))
+            Tag(
+                client=self.client, id=str(uuid.uuid1()), text=text, value=metadata
+            )
+            for text, metadata in zip_longest(texts, metadatas or [])
         ]
 
         self.index.insert(items)

@@ -40,7 +40,7 @@ class YouTubeFileLoader(BaseModel):
             try:
                 task.wait(max_timeout_s=60, retry_delay_s=2)
             except SteamshipError as e:
-                if not ("timeout" in e.message):
+                if "timeout" not in e.message:
                     raise e
 
         if task.state == TaskState.failed:

@@ -57,8 +57,7 @@ class ChatMessageHistory(BaseChatMessageHistory):
         return messages
 
     def _get_or_create_conversation_file(self) -> File:
-        convo_file = self._get_conversation_file()
-        if convo_file:
+        if convo_file := self._get_conversation_file():
             return convo_file
         return File.create(self.client, handle=self.key, blocks=[])
 
@@ -69,8 +68,7 @@ class ChatMessageHistory(BaseChatMessageHistory):
             return None
 
     def _delete_conversation_file(self):
-        convo_file = self._get_conversation_file()
-        if convo_file:
+        if convo_file := self._get_conversation_file():
             convo_file.delete()
 
     def add_user_message(self, message: str) -> None:

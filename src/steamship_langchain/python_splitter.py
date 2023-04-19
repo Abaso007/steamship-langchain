@@ -116,7 +116,7 @@ class ClassDef(PythonSegment):
             # handle switch from 1- to 0-indexed
             code = "\n".join(code_lines[seg[0] - 1 : seg[1]])
             # ignore empty segments, there is no point in indexing them
-            if len(code.strip()) == 0:
+            if not code.strip():
                 continue
             # always provide context
             if seg[0] != self.first_line:

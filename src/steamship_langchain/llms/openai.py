@@ -117,12 +117,14 @@ class OpenAI(BaseOpenAI):
         total_token_usage = defaultdict(int)
         for _prompts in sub_prompts:
             sub_generations, token_usage = self._batch(prompts=_prompts, stop=stop)
-            for i in range(0, len(sub_generations), self.n):
-                generations.append(sub_generations[i : i + self.n])
+            generations.extend(
+                sub_generations[i : i + self.n]
+                for i in range(0, len(sub_generations), self.n)
+            )
             for key, usage in token_usage.items():
                 total_token_usage[key] += usage
 
-        if len(generations) == 0:
+        if not generations:
             generations = [[Generation(text="Generation failed.")]]
 
         return LLMResult(
@@ -172,22 +174,17 @@ class OpenAI(BaseOpenAI):
             generation_file = task.output.file
 
             for text_block in generation_file.blocks:
-                for block_tag in text_block.tags:
-                    if block_tag.kind == TagKind.GENERATION:
-                        generations.append(
-                            Generation(text=block_tag.value[TagValueKey.STRING_VALUE])
-                        )
-
+                generations.extend(
+                    Generation(text=block_tag.value[TagValueKey.STRING_VALUE])
+                    for block_tag in text_block.tags
+                    if block_tag.kind == TagKind.GENERATION
+                )
             for file_tag in generation_file.tags:
                 if file_tag.kind == "token_usage":
                     token_usage = file_tag.value
 
         except SteamshipError as e:
             logging.error(f"could not generate from OpenAI LLM: {e}")
-            # TODO(douglas-reid): determine appropriate action here.
-            # for now, if an error is encountered, just swallow.
-            pass
-
         return generations, token_usage
 
 
